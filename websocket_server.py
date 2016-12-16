@@ -1,4 +1,4 @@
-# Author: Johan Hanssen Seferidis
+# Original author: Johan Hanssen Seferidis
 # License: MIT
 
 import re, sys
@@ -7,13 +7,7 @@ from base64 import b64encode
 from hashlib import sha1
 import logging
 
-if sys.version_info[0] < 3 :
-	from SocketServer import ThreadingMixIn, TCPServer, StreamRequestHandler
-else:
-	from socketserver import ThreadingMixIn, TCPServer, StreamRequestHandler
-
-
-
+from socketserver import ThreadingMixIn, TCPServer, StreamRequestHandler
 
 '''
 +-+-+-+-+-------+-+-------------+-------------------------------+
@@ -75,8 +69,6 @@ class API():
 	def send_message_to_all(self, msg):
 		self._multicast_(msg)
 
-
-
 # ------------------------- Implementation -----------------------------
 
 class WebsocketServer(ThreadingMixIn, TCPServer, API):
@@ -129,8 +121,6 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
 		for client in self.clients:
 			if client['handler'] == handler:
 				return client
-
-
 
 class WebSocketHandler(StreamRequestHandler):
 
@@ -189,10 +179,8 @@ class WebSocketHandler(StreamRequestHandler):
 			payload_length = struct.unpack(">Q", self.rfile.read(8))[0]
 
 		masks = self.read_bytes(4)
-		decoded = ""
-		for char in self.read_bytes(payload_length):
-			char ^= masks[len(decoded) % 4]
-			decoded += chr(char)
+
+		decoded = bytes([i^masks[idx % 4] for idx, i in enumerate(self.read_bytes(payload_length))]).decode()
 		self.server._message_received_(self, decoded)
 
 	def send_message(self, message):
@@ -279,8 +267,6 @@ class WebSocketHandler(StreamRequestHandler):
 	def finish(self):
 		self.server._client_left_(self)
 
-
-
 def encode_to_UTF8(data):
 	try:
 		return data.encode('UTF-8')
@@ -291,8 +277,6 @@ def encode_to_UTF8(data):
 		raise(e)
 		return False
 
-
-
 def try_decode_UTF8(data):
 	try:
 		return data.decode('utf-8')
@@ -300,10 +284,3 @@ def try_decode_UTF8(data):
 		return False
 	except Exception as e:
 		raise(e)
-
-
-
-# This is only for testing purposes
-class DummyWebsocketHandler(WebSocketHandler):
-    def __init__(self, *_):
-        pass

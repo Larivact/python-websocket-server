@@ -3,7 +3,7 @@ Websocket Server
 
 A minimal Websockets Server in Python with no external dependencies.
 
-  * Works with Python2 and Python3
+  * Requires Python3
   * Clean simple API
   * Multiple clients
   * No dependencies
